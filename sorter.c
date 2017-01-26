@@ -8,6 +8,7 @@
 #define FALSE 0
 
 unsigned int* getUserValues();
+int findMin();
 
 int main(int argc, char *argv[], char *envp[]){
   //Read the first n values
@@ -144,14 +145,26 @@ int main(int argc, char *argv[], char *envp[]){
     }
     opt = getopt(argc, argv, "un:m:M:i:o:c:");
   }
-  
-  for(int i = optind; i < argc || i < min_int; i++){
+
+  //Hard to read, maybe break it up
+  int* matrix = malloc(sizeof(int) * ((findMin((argc - optind), num_int) <= 0)?argc-optind:num_int));
+  if(!i_flag){
+    for(int i = optind; i < argc || i < min_int; i++){
+      if(atoi(argv[i]) > 0){
+	matrix[i - optind] = atoi(argv[i]);
+      }else{
+	//handle non-number input
+	//handle negative numbers (resize array, realloc)
+      }
+    }
+  }else{
     
   }
+
   
   unsigned int *username_array = getUserValues();
 
-
+  //Emancipation
   if(i_flag){
     free(input_file);
   }
@@ -161,7 +174,9 @@ int main(int argc, char *argv[], char *envp[]){
   if(c_flag){
     free(count_file);
   }
+  
   free(username_array);
+  free(matrix);
   
   return 0;
 }
@@ -178,3 +193,12 @@ unsigned int* getUserValues(){
   return username_array;
 }
 
+int findMin(int a, int b){
+  if(a < b){
+    return -1;
+  }else if(a > b){
+    return 1;
+  }else{
+    return 0;
+  }
+}
