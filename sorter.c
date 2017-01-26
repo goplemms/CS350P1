@@ -42,8 +42,7 @@ int main(int argc, char *argv[], char *envp[]){
     switch(opt){
     case 'u':
       {
-	fprintf(stderr, "Usage: prog1sorter: [-u] [-n <num-integers>] [-m <min-int>] [-M <max-int>]
-[-i <input-file-name>] [-o <output-file-name>] [-c <count-file-name>]");
+	fprintf(stderr, "prog1sorter: Sorts integers in ascending order\nOptions: [-u] [-n <num-integers>] [-m <min-int>] [-M <max-int>] [-i <input-file-name>] [-o <output-file-name>] [-c <count-file-name>]\n");
 	exit(0);
 	break;
       }
@@ -56,7 +55,7 @@ int main(int argc, char *argv[], char *envp[]){
 	  num_int += ((*c) - 48);
 	}
 	if(num_int <= 0 && num_int >= 1000000){
-	  fprintf(stderr, "The -n option should have an integer argument that is greater than 0 and less than 1000000");
+	  fprintf(stderr, "The -n option should have an integer argument that is greater than 0 and less than 1000000\n");
 	  exit(1);
 	}
 	break;
@@ -66,11 +65,14 @@ int main(int argc, char *argv[], char *envp[]){
 	m_flag = TRUE;
 	min_int = 0;
 	for(const char *c = optarg; isdigit(*c) != 0; c++){
-	  num_int *= 10;
-	  num_int += ((*c) - 48);
+	  min_int *= 10;
+	  min_int += ((*c) - 48);
 	}
-	if(min_int < 1 || (M_flag && min_int > max_int)){
-	  fprintf(stderr, "The -m option should have an integer argument that is greater than 0");
+	if(min_int < 1){
+	  fprintf(stderr, "The -m option should have an integer argument that is greater than 0\n");
+	  exit(1);
+	}else if(M_flag && min_int > max_int){
+	  fprintf(stderr, "The -M argument should have an integer argument that is greater than the -m argument\n");
 	  exit(1);
 	}
 	break;
@@ -83,8 +85,11 @@ int main(int argc, char *argv[], char *envp[]){
 	  max_int *= 10;
 	  max_int += ((*c) - 48);
 	}
-	if(max_int < min_int && max_int >= 1000000){
-	  fprintf(stderr, "The -M option should have an integer argument that is greater than 0 and less than 1000000");
+	if(max_int >= 1000000){
+	  fprintf(stderr, "The -M option should have an integer argument that is greater than 0 and less than 1000000\n");
+	  exit(1);
+	}else if(max_int < min_int){
+	  fprintf(stderr, "The -M argument should have an integer argument that is greater than the -m argument\n");
 	  exit(1);
 	}
 	break;
@@ -97,8 +102,6 @@ int main(int argc, char *argv[], char *envp[]){
 	  exit(1);
 	}
 	input_file = malloc(sizeof(char) * strlen(optarg));
-
-	printf("Input File variable allocated size:");
 	input_file = strdup(optarg);
 
 	break;
@@ -106,40 +109,58 @@ int main(int argc, char *argv[], char *envp[]){
     case 'o':
       {
 	o_flag = TRUE;
+	if(optarg == NULL){
+	  fprintf(stderr,"There must be a path for the output file after -o\n");
+	  exit(1);
+	}
+	output_file = malloc(sizeof(char) * strlen(optarg));
 	output_file = strdup(optarg);
 	break;
       }
     case 'c':
       {
 	c_flag = TRUE;
+	if(optarg == NULL){
+	  fprintf(stderr,"There must be a path for the count file after -c\n");
+	  exit(1);
+	}
+	count_file = malloc(sizeof(char) * strlen(optarg));
 	count_file = strdup(optarg);
 	break;
       }
     case '?':
-      if(optopt){
-
-      }else{
-	fprintf(stderr, "Unrecognized option: %c", *argv[optind]);
-	exit(1);
-      }
+      //Getopt already returns an informative string
+      //fprintf(stderr, "Unrecognized option: -%c\n", optopt);
+      exit(1);
+     
+    case ':':
+      //Getopt already returns an informative string
+      //fprintf(stderr, "Option -%c requires an argument\n", optopt);
+      exit(1);
     default:
       {
 	break;
       }
     }
-    opt = getopt(argc, argv, "unmMioc:");
+    opt = getopt(argc, argv, "un:m:M:i:o:c:");
   }
   
-  
-  
+  for(int i = optind; i < argc || i < min_int; i++){
+    
+  }
   
   unsigned int *username_array = getUserValues();
 
 
-
-  free(input_file);
-  free(output_file);
-  free(count_file);
+  if(i_flag){
+    free(input_file);
+  }
+  if(o_flag){
+    free(output_file);
+  }
+  if(c_flag){
+    free(count_file);
+  }
   free(username_array);
   
   return 0;
