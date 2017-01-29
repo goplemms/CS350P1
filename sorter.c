@@ -9,7 +9,7 @@
 #define FREEFILE if(i_flag){free(input_file);}if(o_flag){free(output_file);}if(c_flag){free(count_file);}
 
 unsigned int* getUsername();
-int findMin();
+int compareInt(const void * a, const void * b);
 
 //side note
 /*
@@ -66,7 +66,7 @@ int main(int argc, char *argv[], char *envp[]){
 	if(num_int <= 0 && num_int >= 1000000){
 	  fprintf(stderr, "The -n option should have an integer argument that is greater than 0 and less than 1000000\n");
 	  FREEFILE
-	  exit(1);
+	    exit(1);
 	}
 	break;
       }
@@ -81,11 +81,11 @@ int main(int argc, char *argv[], char *envp[]){
 	if(min_int < 1){
 	  fprintf(stderr, "The -m option should have an integer argument that is greater than 0\n");
 	  FREEFILE
-	  exit(1);
+	    exit(1);
 	}else if(M_flag && min_int > max_int){
 	  fprintf(stderr, "The -M argument should have an integer argument that is greater than the -m argument\n");
 	  FREEFILE
-	  exit(1);
+	    exit(1);
 	}
 	break;
       }
@@ -100,11 +100,11 @@ int main(int argc, char *argv[], char *envp[]){
 	if(max_int >= 1000000){
 	  fprintf(stderr, "The -M option should have an integer argument that is greater than 0 and less than 1000000\n");
 	  FREEFILE
-	  exit(1);
+	    exit(1);
 	}else if(max_int < min_int){
 	  fprintf(stderr, "The -M argument should have an integer argument that is greater than the -m argument\n");
 	  FREEFILE
-	  exit(1);
+	    exit(1);
 	}
 	break;
       }
@@ -114,12 +114,12 @@ int main(int argc, char *argv[], char *envp[]){
 	if(optarg == NULL){
 	  fprintf(stderr,"There must be a path for the input file after -i\n");
 	  FREEFILE
-	  exit(1);
+	    exit(1);
 	}
 	if(access(optarg, F_OK) == -1){
 	  fprintf(stderr,"The file %s does not exist", optarg);
 	  FREEFILE
-	  exit(1);
+	    exit(1);
 	}
 	input_file = malloc(sizeof(char) * strlen(optarg));
 	input_file = strdup(optarg);
@@ -130,13 +130,13 @@ int main(int argc, char *argv[], char *envp[]){
 	o_flag = TRUE;
 	if(optarg == NULL){
 	  fprintf(stderr,"There must be a path for the output file after -o\n");
-	 FREEFILE
-	  exit(1);
+	  FREEFILE
+	    exit(1);
 	}
 	if(access(optarg, F_OK) == -1){
 	  fprintf(stderr,"The file %s does not exist", optarg);
 	  FREEFILE
-	  exit(1);
+	    exit(1);
 	}
 	output_file = malloc(sizeof(char) * strlen(optarg));
 	output_file = strdup(optarg);
@@ -148,12 +148,12 @@ int main(int argc, char *argv[], char *envp[]){
 	if(optarg == NULL){
 	  fprintf(stderr,"There must be a path for the count file after -c\n");
 	  FREEFILE
-	  exit(1);
+	    exit(1);
 	}
 	if(access(optarg, F_OK) == -1){
 	  fprintf(stderr,"The file %s does not exist", optarg);
 	  FREEFILE
-	  exit(1);
+	    exit(1);
 	}
 	count_file = malloc(sizeof(char) * strlen(optarg));
 	count_file = strdup(optarg);
@@ -162,44 +162,51 @@ int main(int argc, char *argv[], char *envp[]){
     case '?':
       //Getopt already returns an informative string
       //fprintf(stderr, "Unrecognized option: -%c\n", optopt);
+      fprintf(stderr, "Cannot pass in values through the command line\n");
       FREEFILE
-      exit(1);
+	exit(1);
      
     case ':':
       //Getopt already returns an informative string
       //fprintf(stderr, "Option -%c requires an argument\n", optopt);
+      fprintf(stderr, "Cannot pass in values through the command line\n");
       FREEFILE
-      exit(1);
+	exit(1);
     default:
       {
+	fprintf(stderr, "Cannot pass in values through the command line\n");
+	FREEFILE
+	exit(1);
 	break;
       }
     }
     opt = getopt(argc, argv, "un:m:M:i:o:c:");
   }
 
+  
   //Create unsorted matrix
-  unsigned int matrix_size =(findMin((argc - optind), num_int) <= 0)?argc-optind:num_int;
-  int* matrix = malloc(sizeof(int) * matrix_size);
+  int* matrix = malloc(sizeof(int) * num_int);
+  int saved_count = 0;
   if(!i_flag){
-    int i = optind;
-    for(; i < argc || i < min_int; i++){
-      int eval = atoi(argv[i]);
-      if(eval >= min_int && eval <= max_int){
-	matrix[i - optind] = atoi(argv[i]);
-      }else{
-	//handle non-conforming integer
-	
+    int* eval = malloc(sizeof(int));
+    int check_scan = scanf("%d", eval);
+    for(; saved_count < num_int && check_scan == 1; saved_count++){
+      if(*eval >= min_int && *eval <= max_int){
+	matrix[saved_count] = *eval;
+      }
+      check_scan = scanf("%d", eval);
     }
+    free(eval);
   }else{
     //read from input_file path
   }
+ 
+  realloc(matrix, sizeof(int) * (saved_count));
 
-  
+    
   //Sort matrix
-
-
-
+    
+  qsort(matrix,saved_count,sizeof(int), compareInt);
 
 
   //Seek values
@@ -212,8 +219,8 @@ int main(int argc, char *argv[], char *envp[]){
   
   //Emancipation
   FREEFILE
-  free(username_array);
   free(matrix);
+  free(username_array);
   
   return 0;
 }
@@ -230,13 +237,7 @@ unsigned int* getUsername(){
   return username_array;
 }
 
-int findMin(int a, int b){
-  if(a < b){
-    return -1;
-  }else if(a > b){
-    return 1;
-  }else{
-    return 0;
-  }
+int compareInt(const void * a, const void * b){
+  return (*(int*)a - *(int*)b);
 }
 
