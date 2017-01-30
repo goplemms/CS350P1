@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <time.h>
 
 #define TRUE 1
 #define FALSE 0
@@ -156,11 +157,14 @@ int main(int argc, char *argv[], char *envp[]){
 	  FREEFILE;
 	  exit(1);
 	}
+	/*
 	if(access(optarg, F_OK) == -1){
 	  fprintf(stderr,"The file %s does not exist\n", optarg);
 	  FREEFILE;
 	  exit(1);
 	}
+	*/
+	
 	output_file = malloc(sizeof(char) * strlen(optarg));
 	output_file = strdup(optarg);
 	o_flag = TRUE;
@@ -177,11 +181,13 @@ int main(int argc, char *argv[], char *envp[]){
 	  FREEFILE;
 	  exit(1);
 	}
+	/*
 	if(access(optarg, F_OK) == -1){
 	  fprintf(stderr,"The file %s does not exist\n", optarg);
 	  FREEFILE;
 	  exit(1);
 	}
+	*/
 	count_file = malloc(sizeof(char) * strlen(optarg));
 	count_file = strdup(optarg);
 	c_flag = TRUE;
@@ -210,9 +216,10 @@ int main(int argc, char *argv[], char *envp[]){
     }
     opt = getopt(argc, argv, "un:m:M:i:o:c:");
   }
-
+  
   //Create unsorted matrix
   int* matrix = malloc(sizeof(int) * num_int);
+  memset(matrix, 0, sizeof(int) * num_int);
   int saved_count = 0;
   int* eval = malloc(sizeof(int));
 
@@ -221,8 +228,24 @@ int main(int argc, char *argv[], char *envp[]){
   }
   
   int check_scan = (i_flag)?fscanf(input,"%d", eval):scanf("%d", eval);
+
+  if(*eval != num_int && n_flag){
+    FREEFILE;
+    if(i_flag){
+      fclose(input);
+    }
+    fprintf(stderr, "The number of inputs does not match the indicated -n\n");
+    exit(1);
+  }else if(min_int > *eval || max_int < *eval){
+    FREEFILE;
+    if(i_flag){
+      fclose(input);
+    }
+    fprintf(stderr, "The number of inputs is not between the bounds\n");
+    exit(1);
+  }
   
-  for(; saved_count < num_int; saved_count++){
+  for(int i = 0; i < num_int; i++){
     if(check_scan != 1){
       fprintf(stderr,"There should be at least %d values being processed\n", num_int);
       FREEFILE;
@@ -232,6 +255,7 @@ int main(int argc, char *argv[], char *envp[]){
     }
     if(*eval >= min_int && *eval <= max_int){
       matrix[saved_count] = *eval;
+      saved_count++;
     }
     check_scan = (i_flag)?fscanf(input,"%d", eval):scanf("%d", eval);
   }
@@ -286,23 +310,33 @@ int main(int argc, char *argv[], char *envp[]){
       printf("%c\t%u\t%u\n", username[i], username[i], matches[i]);
     }
   }
+
+  if(c_flag){
+    fclose(count);
+  }
   
   //Return output
-  
+
+  if(o_flag){
+    output = fopen(output_file, "w");
+  }
+
+  for(int i = 0; i < saved_count; i++){
+    if(o_flag){
+      fprintf(output, "%d\n", matrix[i]);
+    }else{
+      printf("%d\n", matrix[i]);
+    }
+  }
+
+  if(o_flag){
+    fclose(output);
+  }
   
   //Emancipation
   FREEFILE;
-    
-  if(i_flag){
-    fclose(input);
-  }
-  if(o_flag){
-    //fclose(output);
-  }
-  if(c_flag){
-    //fclose(count);
-  }
-    free(matrix);
+  free(matches);
+  free(matrix);
   free(username);
   return 0;
 }
