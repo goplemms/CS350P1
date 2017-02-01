@@ -28,7 +28,7 @@ unsigned short int c_flag = FALSE;
 
 int initializeOptions(int argc, char** argv, char* option_string){
    
-  int opt = getopt(argc, argv, "un:m:M:i:o:c:s:"); 
+  int opt = getopt(argc, argv, option_string); 
   opterr = 1;
 
   while(opt != -1){
@@ -183,8 +183,7 @@ int initializeOptions(int argc, char** argv, char* option_string){
       }
     case '?':
       //Getopt already returns an informative string
-      //fprintf(stderr, "Unrecognized option: -%c\n", optopt);
-      fprintf(stderr, "Cannot pass in values through the command line\n");
+      fprintf(stderr, "Unrecognized option: -%c\n", optopt);
       FREEFILE;
       return 1;
      
@@ -202,7 +201,7 @@ int initializeOptions(int argc, char** argv, char* option_string){
 	break;
       }
     }
-    opt = getopt(argc, argv, "un:m:M:i:o:c:");
+    opt = getopt(argc, argv, "un:m:M:i:o:c:s:");
   }
   return 0;
 }

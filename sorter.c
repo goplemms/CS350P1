@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <time.h>
+#include "timer.h"
 
 #include "option_parse.h"
 
@@ -19,16 +20,20 @@ int main(int argc, char *argv[], char *envp[]){
   FILE* input = NULL;
   FILE* output = NULL;
   FILE* count = NULL;
-
   
-  char* set = malloc(sizeof(char) * 13);
-  set = "un:m:M:i:o:c:";
+  char set[13] = "un:m:M:i:o:c:";
   
-  int h = initializeOptions(argc, argv, set);
-  if(h == 1){
+  int err_check = initializeOptions(argc, argv, set);
+  if(err_check == 1){
     exit(1);
   }
 
+  err_check = recordStart();
+  if(err_check < 0){
+    exit(1); 
+  }
+  
+  
   //Create unsorted matrix
   int* matrix = malloc(sizeof(int) * num_int);
   memset(matrix, 0, sizeof(int) * num_int);
@@ -48,18 +53,11 @@ int main(int argc, char *argv[], char *envp[]){
     }
     fprintf(stderr, "The number of inputs does not match the indicated -n\n");
     exit(1);
-  }else if(min_int > *eval || max_int < *eval){
-    FREEFILE;
-    if(i_flag){
-      fclose(input);
-    }
-    fprintf(stderr, "The number of inputs is not between the bounds\n");
-    exit(1);
   }
   
   for(int i = 0; i < num_int; i++){
     if(check_scan != 1){
-      fprintf(stderr,"There should be at least %d values being processed\n", num_int);
+      fprintf(stderr,"%d being processed when there should be at least %d values being processed\n",*eval, num_int);
       FREEFILE;
       free(matrix);
       free(eval);
@@ -68,6 +66,8 @@ int main(int argc, char *argv[], char *envp[]){
     if(*eval >= min_int && *eval <= max_int){
       matrix[saved_count] = *eval;
       saved_count++;
+    }else{
+      fprintf(stderr, "The value %d is out of bounds\n", *eval);
     }
     check_scan = (i_flag)?fscanf(input,"%d", eval):scanf("%d", eval);
   }
@@ -144,6 +144,12 @@ int main(int argc, char *argv[], char *envp[]){
   if(o_flag){
     fclose(output);
   }
+  
+  err_check = recordEnd();
+  if(err_check < 0){
+    exit(1); 
+  }
+  
   
   //Emancipation
   FREEFILE;
@@ -323,11 +329,3 @@ int compareInt(const void * a, const void * b){
   }
   
  */
-
-	/*
-	if(access(optarg, F_OK) == -1){
-	  fprintf(stderr,"The file %s does not exist\n", optarg);
-	  FREEFILE;
-	  exit(1);
-	}
-	*/

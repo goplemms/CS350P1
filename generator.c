@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <time.h>
+#include "timer.h"
 
 #include "option_parse.h"
 
@@ -16,13 +17,17 @@ int compareInt(const void * a, const void * b);
 
 int main(int argc, char *argv[], char *envp[]){
 
-  char* set = malloc(sizeof(char) * 12);
-  set = "un:m:M:s:o:";
+  char set[12] = "un:m:M:s:o:";
   
-  int h = initializeOptions(argc, argv, set);
+  int err_check = initializeOptions(argc, argv, set);
   
-  if(h == 1){
+  if(err_check == 1){
     exit(1);
+    }
+  
+  err_check = recordStart();
+  if(err_check < 0){
+    exit(1); 
   }
   
   FILE* output = NULL;
@@ -61,6 +66,11 @@ int main(int argc, char *argv[], char *envp[]){
 
   if(o_flag){
     fclose(output);
+  }
+  
+  err_check = recordEnd();
+  if(err_check < 0){
+    exit(1); 
   }
 
   FREEFILE;
